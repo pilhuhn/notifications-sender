@@ -14,7 +14,8 @@
     "method": "PUT",
     "X-Insight-Token": "bla-token",
     "trustAll": "false",
-    "url": "http://localhost:8085",
-    "type": "webhook"
+    "url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+    "type": "slack"
+
   }
 }

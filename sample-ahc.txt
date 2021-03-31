@@ -12,7 +12,7 @@
   },
   "meta": {
     "X-Insight-Token": "bla-token",
-    "url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
-    "type": "slack"
+    "url": "http://localhost:8087",
+    "type": "webhook"
   }
 }
