@@ -2,12 +2,8 @@ package com.redhat.cloud.notifications.sender;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Expression;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.qute.QuteEndpoint;
-import org.apache.camel.component.slack.SlackComponent;
-import org.apache.camel.impl.DefaultCamelContext;
 
 /**
  *
@@ -24,24 +20,24 @@ public class MainConfig extends RouteBuilder {
             .log("    with the offset ${headers[kafka.OFFSET]}")
             .log("    with the key ${headers[kafka.KEY]}")
 
-            //.dynamicRouter(method(Router.class,"route"))
-
-
             .setHeader("targetUrl",jsonpath("$.meta.url"))
             .setHeader("type",jsonpath("$.meta.type"))
-            .setHeader(Exchange.HTTP_URI, jsonpath("$.meta.url"))
+            // translate the json formatted string body into a Java class
+            .unmarshal().json()
             .choice()
-                .when().jsonpath("$.meta[?(@.type=='webhook')]")
-                .setHeader(Exchange.HTTP_URI, jsonpath("$.meta.url"))
-                    .unmarshal().json()
+                .when().simple("${header.type}== 'webhook'")
                     .to("qute:notifications/webhook")
-                    .toD("ahc:" + "${header.targetUrl}")
-                .when().jsonpath("$.meta[?(@.type=='slack')]" )
-                    .unmarshal().json()
+                    .toD("vertx-http:" + "${header.targetUrl}")
+                .when().simple("${header.type}== 'slack'")
                     .to("qute:notifications/slack.txt")
                     .toD("slack:#heiko-test?webhookUrl=${header.targetUrl}")
+                .otherwise()
+                    .log(LoggingLevel.ERROR, "Unsupported type: " + simple("${header.type}"))
+                   // TODO flag as failure
             .end()
-            .log("  _>  ${body}")
+                // Processing is done, now look at the output
+            .onCompletion()
+                .to("kafka:notif-return")
 
         ;
 
