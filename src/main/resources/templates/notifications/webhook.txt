@@ -1,1 +1,8 @@
-This is the webhook payload: {payload}
+{@com.redhat.cloud.notifications.sender.IncomingMsg body}
+{@java.util.Map<java.lang.String,java.lang.String> body.meta}
+{@java.lang.String body.meta.type}
+{@java.lang.String body.payload.bundle}
+This is the webhook payload: {body}
+This is the webhook bundle: {body.payload.bundle}
+Metadata: {body.meta}
+With type {body.meta.type}

@@ -13,7 +13,7 @@ public class WebHook {
     @POST
     public Response hook(String payload) {
 
-        System.out.println("-->>---------------\n   -->> Got  " + payload + "\n-->>-------------");
+        System.out.println("-->>-----Incoming payload----------\n" + payload + "\n-->>------------------");
         return Response.noContent().build();
     }
 

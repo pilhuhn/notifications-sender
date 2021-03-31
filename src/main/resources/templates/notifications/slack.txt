@@ -1,1 +1,7 @@
-Hello {body.payload.bundle}
+Hello Bundle {body.payload.bundle}
+Those are your values
+{#with body.payload.payload}
+{#for key in keySet}
+Key: {key} Value: {body.payload.payload.get(key)}
+{/for}
+{/with}

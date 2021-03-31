@@ -17,7 +17,7 @@ public class MainConfig extends RouteBuilder {
 
     public void configure () {
 
-        from("kafka:notifs?brokers=localhost:9092")
+        from("kafka:notifs")
             .log("Message received from Kafka : ${body}")
             .log("    on the topic ${headers[kafka.TOPIC]}")
             .log("    on the partition ${headers[kafka.PARTITION]}")
@@ -33,24 +33,17 @@ public class MainConfig extends RouteBuilder {
             .choice()
                 .when().jsonpath("$.meta[?(@.type=='webhook')]")
                 .setHeader(Exchange.HTTP_URI, jsonpath("$.meta.url"))
+                    .unmarshal().json()
                     .to("qute:notifications/webhook")
-                    .to("ahc:" + header("targetUrl"))   // header() is not eval'd, but turned to string
+                    .toD("ahc:" + "${header.targetUrl}")
                 .when().jsonpath("$.meta[?(@.type=='slack')]" )
+                    .unmarshal().json()
                     .to("qute:notifications/slack.txt")
-                    .to("slack:#heiko-test?webHookUrl=" + jsonpath("$.meta.url")) // concat fails
+                    .toD("slack:#heiko-test?webhookUrl=${header.targetUrl}")
             .end()
             .log("  _>  ${body}")
 
         ;
 
-
-//        from ("qute:/notifications/slack.txt")
-//                .log("now qute slack");
-
-        from("kafka:bla?brokers=localhost:9092").to("qute:notifications/slack.txt")
-                .log("++++++++++ Template eval +++++++")
-                .log("${body}")
-                .log("++++++++++---------------+++++++")
-        ;
     }
 }
