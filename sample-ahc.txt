@@ -1,0 +1,18 @@
+{
+  "payload": {
+    "bundle": "a-bundle",
+    "application": "my-app",
+    "event_type": "et1",
+    "account_id": "54321",
+    "timestamp": "2021-03-24T17:39:42.955439",
+    "payload": {
+      "key1": "value1",
+      "key2": "value2"
+    }
+  },
+  "meta": {
+    "X-Insight-Token": "bla-token",
+    "url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+    "type": "slack"
+  }
+}

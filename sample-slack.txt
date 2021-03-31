@@ -1,0 +1,20 @@
+{
+  "payload": {
+    "bundle": "a-bundle",
+    "application": "my-app",
+    "event_type": "et1",
+    "account_id": "54321",
+    "timestamp": "2021-03-24T17:39:42.955439",
+    "payload": {
+      "key1": "value1",
+      "key2": "value2"
+    }
+  },
+  "meta": {
+    "method": "PUT",
+    "X-Insight-Token": "bla-token",
+    "trustAll": "false",
+    "url": "http://localhost:8085",
+    "type": "webhook"
+  }
+}
