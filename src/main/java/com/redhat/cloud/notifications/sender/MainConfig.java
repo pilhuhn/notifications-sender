@@ -6,6 +6,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 
+import java.io.IOException;
+
 /**
  *
  */
@@ -26,7 +28,11 @@ public class MainConfig extends RouteBuilder {
 
         from("direct:ahc")
             .to("qute:notifications/webhook")
-            .toD("vertx-http:" + "${header.targetUrl}")
+                .doTry()
+                    .toD("vertx-http:" + "${header.targetUrl}")
+                .doCatch(IOException.class)
+                    .to("direct:error")
+                .end()
             ;
 
         from("direct:slack")
