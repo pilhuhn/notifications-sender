@@ -15,7 +15,8 @@
     "X-Insight-Token": "bla-token",
     "trustAll": "false",
     "url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
-    "type": "slack"
+    "type": "slack",
+    "historyId": "123-456"
 
   }
 }

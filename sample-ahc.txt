@@ -13,6 +13,7 @@
   "meta": {
     "X-Insight-Token": "bla-token",
     "url": "http://localhost:8087",
-    "type": "webhook"
+    "type": "webhook",
+    "historyId": "123-456"
   }
 }
