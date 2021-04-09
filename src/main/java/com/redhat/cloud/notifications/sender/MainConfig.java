@@ -18,21 +18,26 @@ public class MainConfig extends RouteBuilder {
 
         Processor myTansformer = new ResultTransformer();
 
+        // If the webhook sender fails, we mark the route as handled
+        // and forward to the error handler
+        // Setting handled to true ends the processing chain below
+        onException(IOException.class)
+            .to("direct:error")
+            .handled(true);
+
+
+        // The error handler. We set the outcome to fail and then send to kafka
         from("direct:error")
-                .setBody(simple("Fail"))
+                .setBody(constant("Fail"))
                 .process(myTansformer)
                 .marshal().json()
-                .log("Fail with ${body}")
+                .log("Fail with ${body} and ${header.cid}")
                 .to("kafka:notif-return")
         ;
 
-        from("direct:ahc")
+        from("direct:webhook")
             .to("qute:notifications/webhook")
-                .doTry()
-                    .toD("vertx-http:" + "${header.targetUrl}")
-                .doCatch(IOException.class)
-                    .to("direct:error")
-                .end()
+            .toD("vertx-http:${header.targetUrl}")
             ;
 
         from("direct:slack")
@@ -41,17 +46,18 @@ public class MainConfig extends RouteBuilder {
             ;
 
 
+        /*
+         * Main processing entry point, receiving data from Kafka
+         */
 
         from("kafka:notifs")
             .log("Message received from Kafka : ${body}")
-            .log("    on the topic ${headers[kafka.TOPIC]}")
-            .log("    on the partition ${headers[kafka.PARTITION]}")
-            .log("    with the offset ${headers[kafka.OFFSET]}")
-            .log("    with the key ${headers[kafka.KEY]}")
 
+            .setHeader("timeIn", simpleF("%d",System.currentTimeMillis()))
             .setHeader("targetUrl",jsonpath("$.meta.url"))
             .setHeader("type",jsonpath("$.meta.type"))
             .setHeader("cid", jsonpath("$.meta.historyId"))
+            .log("  with ID ${cid}" )
 
             .errorHandler(
                     deadLetterChannel("direct:error"))
@@ -59,18 +65,18 @@ public class MainConfig extends RouteBuilder {
             .unmarshal().json()
             .choice()
                 .when().simple("${header.type}== 'webhook'")
-                    .to("direct:ahc")
+                    .to("direct:webhook")
                 .when().simple("${header.type}== 'slack'")
                     .to("direct:slack")
                 .otherwise()
-                    .log(LoggingLevel.ERROR, "Unsupported type: " + simple("${header.type}"))
+                    .log(LoggingLevel.ERROR, "Unsupported type: ${header.type}")
                    // TODO flag as failure
             .end()
                 // Processing is done, now look at the output
-            .setBody(simple("Success"))
+            .setBody(constant("Success"))
             .process(myTansformer)
                 .marshal().json()
-                .log("Success with ${body}")
+                .log("Success with ${body} and ${header.cid}")
             .to("kafka:notif-return")
         ;
 

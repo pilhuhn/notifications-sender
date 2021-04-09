@@ -5,7 +5,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 /**
- *
+ * Just a sample web-hook that we can send to for demo purposes.
  */
 @Path("/")
 public class WebHook {
