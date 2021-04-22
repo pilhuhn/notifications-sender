@@ -19,7 +19,13 @@ public class ResultTransformer implements Processor {
 
         String cid = in.getHeader("cid", String.class);
 
-        long timeIn = Long.parseLong((String) in.getHeader("timeIn")); // TODO use header("kafka.TIMESTAMP") ?
+        Object timeHeader = in.getHeader("timeIn");
+        long timeIn;
+        if (timeHeader!=null) {
+            timeIn = Long.parseLong((String) timeHeader); // TODO use header("kafka.TIMESTAMP") ?
+        } else {
+            timeIn = System.currentTimeMillis();
+        }
         long timeDiff = System.currentTimeMillis() - timeIn;
 
         Map<String,Object> out = new HashMap<>();
