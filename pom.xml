@@ -14,11 +14,12 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-    <quarkus.platform.version>1.13.1.Final</quarkus.platform.version>
+    <quarkus.platform.version>1.13.3.Final</quarkus.platform.version>
     <quarkus-plugin.version>${quarkus.platform.version}</quarkus-plugin.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
     <clowder-quarkus-config-source.version>0.1.2</clowder-quarkus-config-source.version>
     <camel-quarkus.version>1.8.0</camel-quarkus.version>
+    <camel-version>3.8.0</camel-version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -52,6 +53,16 @@
       <groupId>com.redhat.cloud.common</groupId>
       <artifactId>clowder-quarkus-config-source</artifactId>
       <version>${clowder-quarkus-config-source.version}</version>
+    </dependency>
+<!--
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-opentelemetry</artifactId>
+    </dependency>
+-->
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-opentelemetry-exporter-jaeger</artifactId>
     </dependency>
 
     <dependency>
@@ -109,6 +120,11 @@
       <artifactId>camel-quarkus-servicenow</artifactId>
       <version>${camel-quarkus.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.camel.quarkus</groupId>
+      <artifactId>camel-quarkus-timer</artifactId>
+      <version>${camel-quarkus.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -137,6 +153,20 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-component-maven-plugin</artifactId>
+        <version>${camel-version}</version>
+        <executions>
+          <execution>
+            <id>generate</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <phase>process-classes</phase>
+          </execution>
+         </executions>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

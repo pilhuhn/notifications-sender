@@ -71,11 +71,14 @@ public class MainConfig extends RouteBuilder {
 
             .process(snowTransformer)
             .toD("servicenow:${header.targetUrl}" +
-                    "?userName=admin&password=${header.token}" +
+                    "?userName=${header.user}&password=${header.token}" +
                     "")
             .process(snowResultTransformer)
                 ;
 
+
+        from("direct:tower")
+                .toD("tower:${header.targetUrl}?user=${header.user}&password=${header.pass}&template=7");
 
         /*
          * Main processing entry point, receiving data from Kafka
@@ -87,6 +90,8 @@ public class MainConfig extends RouteBuilder {
             .setHeader("targetUrl",jsonpath("$.meta.url"))
             .setHeader("type",jsonpath("$.meta.type"))
             .setHeader("cid", jsonpath("$.meta.historyId"))
+            .setHeader("user", jsonpath("$.meta.user"))
+            .setHeader("pass", jsonpath("$.meta.pass"))
 
             .errorHandler(
                     deadLetterChannel("direct:error"))
@@ -99,9 +104,12 @@ public class MainConfig extends RouteBuilder {
                     .to("direct:slack")
                 .when().simple("${header.type}== 'snow'")
                     .to("direct:snow")
+                .when().simple("${header.type}== 'ansible'")
+                    .to("direct:tower")
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Unsupported type: ${header.type}")
-                   // TODO flag as failure
+                   // flag as failure
+                    .to("direct:error")
             .end()
                 // Processing is done, now look at the output
             .setBody(constant("Success"))
