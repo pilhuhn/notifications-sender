@@ -52,7 +52,7 @@ public class MainConfig extends RouteBuilder {
 
         from("direct:webhook")
             .to("qute:notifications/webhook")
-            .toD("vertx-http:${header.targetUrl}")
+            .toD("vertx-http:${header.targetUrl}/${header.cid}")
             ;
 
         from("direct:slack")
@@ -78,13 +78,13 @@ public class MainConfig extends RouteBuilder {
 
 
         from("direct:tower")
-                .toD("tower:${header.targetUrl}?user=${header.user}&password=${header.pass}&template=7");
+                .toD("tower:${header.targetUrl}?user=${header.user}&password=${header.pass}&template=11");
 
         /*
          * Main processing entry point, receiving data from Kafka
          */
         from("kafka:notifs")
-            .log("Message received from Kafka : ${body}")
+            .log("Message received via Kafka : ${body}")
 
             .setHeader("timeIn", simpleF("%d",System.currentTimeMillis()))
             .setHeader("targetUrl",jsonpath("$.meta.url"))
