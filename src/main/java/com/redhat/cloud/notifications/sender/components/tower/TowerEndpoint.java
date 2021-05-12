@@ -94,7 +94,6 @@ public class TowerEndpoint implements Endpoint {
 
             @Override
             public void process(Exchange exchange) throws Exception {
-                System.out.println("process ");
                 // This is where the fun happens
 
                String host = remaining;
@@ -112,7 +111,6 @@ public class TowerEndpoint implements Endpoint {
                           return new X509Certificate[0];
                       }
                   };
-
 
 
                 SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -170,7 +168,7 @@ public class TowerEndpoint implements Endpoint {
                     }
                     sb.append(status.message);
                     exchange.getIn().setBody(sb.toString());
-                    exchange.getIn().setHeader("targetUrl", jobId);
+                    exchange.getIn().setHeader("targetUrl", String.valueOf(jobId));
 
                 }
                 else if (response.statusCode() /100 == 4) {
@@ -225,7 +223,7 @@ public class TowerEndpoint implements Endpoint {
             }
 
             count++;
-            Thread.sleep(100L * (19+count)); // Wait a bit, TODO make configurable, exp backoff?
+            Thread.sleep(150L * (19+count)); // Wait a bit, TODO make configurable, exp backoff?
 
         }
 
