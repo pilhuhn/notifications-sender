@@ -2,6 +2,7 @@ package com.redhat.cloud.notifications.sender.components.tower;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.json.JsonObject;
 import org.apache.camel.AsyncProducer;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Consumer;
@@ -96,8 +97,16 @@ public class TowerEndpoint implements Endpoint {
             public void process(Exchange exchange) throws Exception {
                 // This is where the fun happens
 
-               String host = remaining;
-               String template = (String) parameters.get("template");
+                String host = remaining;
+
+                Map<String,Object> bodyMap = (Map<String, Object>) exchange.getIn().getBody();
+                Map<String,Object> metaMap = (Map<String, Object>) bodyMap.get("meta");
+                String extras = (String) metaMap.get("extras");
+
+                JsonObject jo = new JsonObject(extras);
+                String tmpl = jo.getString("template");
+
+                String template = tmpl != null ? tmpl : (String) parameters.get("template");
 
                 X509TrustManager trustAllCerts = new X509TrustManager() {
                       @Override
@@ -117,21 +126,16 @@ public class TowerEndpoint implements Endpoint {
                 sslContext.init(null, new TrustManager[]{trustAllCerts}, new SecureRandom());
 
 
-                String user = (String) parameters.get("user");
-                String pass = (String) parameters.get("password");
-
-                String s = user + ":" + pass;
-                String userPass = "Basic " + Base64.getEncoder().encodeToString(s.getBytes());
+                String userPass = (String) parameters.get("basicAuth");
+                String basicAuth = "Basic " + userPass;
 
                 HttpClient client = HttpClient.newBuilder()
-
                         .sslContext(sslContext)
                         .build();
 
-
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create("https://" + host + "/api/v2/job_templates/" + template + "/launch/"))
-                        .header("Authorization", userPass)
+                        .header("Authorization", basicAuth)
                         .POST(HttpRequest.BodyPublishers.ofString(""))
                         .build();
 
@@ -148,7 +152,7 @@ public class TowerEndpoint implements Endpoint {
                     Optional<String> oJobUrl = response.headers().firstValue("Location");
                     String jobUrl = oJobUrl.orElse("/api/v2/job/" + jobId + "/");
 
-                    JobStatus status = getJobOutcome(client, host, jobUrl, userPass, mapper);
+                    JobStatus status = getJobOutcome(client, host, jobUrl, basicAuth, mapper);
 
                     StringBuilder sb = new StringBuilder();
                     if (status.status == JobStatus.Status.OK) {

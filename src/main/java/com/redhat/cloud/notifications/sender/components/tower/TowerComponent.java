@@ -11,11 +11,9 @@ import java.util.Map;
  */
 public class TowerComponent extends DefaultComponent  {
 
-    @Metadata(label = "security", secret = true)
-    String user;
-    @Metadata(label = "security", secret = true)
-    String password;
-    @Metadata(required = true)
+    @Metadata(label = "security", secret = true, description = "Base64 encoded user:pass for http basic auth")
+    String basicAuth;
+    @Metadata(required = false, description = "The number of the template to run. Normally comes via meta->extras->template")
     String template;
 
     @Override

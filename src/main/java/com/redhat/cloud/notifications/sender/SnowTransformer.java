@@ -5,6 +5,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 
+import java.util.Base64;
 import java.util.Map;
 
 /**
@@ -22,6 +23,13 @@ public class SnowTransformer implements Processor {
         Map<String,Object> body = (Map<String, Object>) in.getBody();
         Map<String,Object> payload = (Map<String, Object>) body.get("payload");
         Map<String,String> meta = (Map<String, String>) body.get("meta");
+
+        String basicAuth64 = meta.get("basicAuth");
+        String basicAuth = new String(Base64.getDecoder().decode(basicAuth64));
+        String[] parts = basicAuth.split(":");
+
+        in.setHeader("userName", parts[0]);
+        in.setHeader("password", parts[1]);
 
         String cid = in.getHeader("cid", String.class);
 

@@ -53,11 +53,13 @@ public class MainConfig extends RouteBuilder {
         from("direct:webhook")
             .to("qute:notifications/webhook")
             .toD("vertx-http:${header.targetUrl}/${header.cid}")
+                .setBody(constant("Success")) // TODO ?
             ;
 
         from("direct:slack")
             .to("qute:notifications/slack.txt")
             .toD("slack:#heiko-test?webhookUrl=${header.targetUrl}")
+                .setBody(constant("Success")) // TODO ?
             ;
 
         // We create an Incident in ServiceNow
@@ -78,7 +80,7 @@ public class MainConfig extends RouteBuilder {
 
 
         from("direct:tower")
-                .toD("tower:${header.targetUrl}?user=${header.user}&password=${header.pass}&template=11");
+            .toD("tower:${header.targetUrl}?basicAuth=${header.basicAuth}");
 
         /*
          * Main processing entry point, receiving data from Kafka
@@ -90,8 +92,7 @@ public class MainConfig extends RouteBuilder {
             .setHeader("targetUrl",jsonpath("$.meta.url"))
             .setHeader("type",jsonpath("$.meta.type"))
             .setHeader("cid", jsonpath("$.meta.historyId"))
-            .setHeader("user", jsonpath("$.meta.user"))
-            .setHeader("pass", jsonpath("$.meta.pass"))
+            .setHeader("basicAuth", jsonpath("$.meta.basicAuth"))
 
             .errorHandler(
                     deadLetterChannel("direct:error"))
@@ -111,8 +112,7 @@ public class MainConfig extends RouteBuilder {
                    // flag as failure
                     .to("direct:error")
             .end()
-                // Processing is done, now look at the output
-            .setBody(constant("Success"))
+            // Processing is done, now look at the output
             .process(myTransformer)
                 .marshal().json()
                 .log("Success with ${body} and ${header.cid}")
